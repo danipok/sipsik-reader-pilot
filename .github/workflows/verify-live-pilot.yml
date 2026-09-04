@@ -1,0 +1,42 @@
+name: Verify live SIPSIK pilot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/verify-live-pilot.yml
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Revalidate locked source
+        run: npm run check
+      - name: Verify live production files
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://sipsik-reader-pilot.netlify.app'
+          curl --fail --silent --show-error --retry 6 --retry-delay 2 "$base/" -o /tmp/index.html
+          for f in app.js data.js styles.css assets/open.jpg assets/c01-a.jpg assets/c01-b.jpg assets/c02-a.jpg assets/c02-b.jpg assets/c03-a.jpg assets/c03-b.jpg assets/c03-c.jpg; do
+            curl --fail --silent --show-error --retry 6 --retry-delay 2 "$base/$f" -o "/tmp/$(basename "$f")"
+          done
+          grep -q 'Sipsik · Digital reader pilot' /tmp/index.html
+          grep -q 'c03-p031' /tmp/data.js
+      - name: Render live mobile UI and verify JavaScript output
+        shell: bash
+        run: |
+          set -euo pipefail
+          browser="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$browser"
+          "$browser" --headless --no-sandbox --disable-gpu --window-size=390,844 --virtual-time-budget=5000 --dump-dom 'https://sipsik-reader-pilot.netlify.app/' > /tmp/dom-en.html
+          count="$(grep -o 'class="story-paragraph' /tmp/dom-en.html | wc -l | tr -d ' ')"
+          test "$count" = '65'
+          grep -q 'id="c01-p001"' /tmp/dom-en.html
+          grep -q 'id="c03-p032"' /tmp/dom-en.html
+          grep -q '>Open book<' /tmp/dom-en.html
+          "$browser" --headless --no-sandbox --disable-gpu --window-size=390,844 --virtual-time-budget=5000 --dump-dom 'https://sipsik-reader-pilot.netlify.app/?globalLanguage=et' > /tmp/dom-et.html
+          grep -q '>Ava raamat<' /tmp/dom-et.html
+          "$browser" --headless --no-sandbox --disable-gpu --window-size=390,844 --virtual-time-budget=5000 --screenshot=/tmp/sipsik-live-mobile.png 'https://sipsik-reader-pilot.netlify.app/'
+          test -s /tmp/sipsik-live-mobile.png
