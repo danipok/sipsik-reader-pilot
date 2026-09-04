@@ -1,0 +1,50 @@
+name: Recover verified SIPSIK assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/recover-verified-assets.yml
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover exact verified assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p src/assets
+          fetch_verified() {
+            local out="$1"
+            local expected="$2"
+            local url="$3"
+            curl --fail --location --silent --show-error --retry 3 "$url" -o "src/assets/$out"
+            printf '%s  %s\n' "$expected" "src/assets/$out" | sha256sum -c -
+          }
+          fetch_verified 'c01-a.jpg' '119900be884bd46a51ff0ad275a6f095bc8e2a2a5c13e1e86c26b5d31ea0aa88' 'https://oaisdmntprcentralindia.blob.core.windows.net/files/00000000-b83c-8208-8d2b-83abd5ba3ef3/raw?se=2026-09-04T19%3A00%3A23Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A20%3A55Z&ske=2026-09-05T03%3A20%3A55Z&sks=b&skv=2026-02-06&sig=rD%2BHwm0Xa3X%2BZNyQ5xiKS0omTHWzwrAGQo6%2BTjhhLrc%3D'
+          fetch_verified 'c01-b.jpg' '14d777ec99a4562cc83bd5f4d639970f0e02cf9f5592f98b1a54510376e2278f' 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-7bbc-8211-ba7c-bcecbf8a3710/raw?se=2026-09-04T19%3A01%3A07Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A20%3A55Z&ske=2026-09-05T03%3A20%3A55Z&sks=b&skv=2026-02-06&sig=%2BB%2B8RHPXr1HCljVVd1CbJfTY%2BXwuP4gKy0w44hpUzyc%3D'
+          fetch_verified 'c02-a.jpg' '4c05a3d1d376d593d591a71d1e3493feece7b12bf4f535931502e811e5648804' 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-38b8-8211-90e1-2c7a06b14be3/raw?se=2026-09-04T19%3A01%3A07Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A10%3A37Z&ske=2026-09-05T03%3A10%3A37Z&sks=b&skv=2026-02-06&sig=hcIhuDICI4tYeniUi4O3hl5Y6VpdzaN8gzNjF6mtIDQ%3D'
+          fetch_verified 'c02-b.jpg' '3f3a49b25d123c09b5be6765e2584637b4cec773b66c2df61e1013d0e20af753' 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-99fc-8211-a7c7-c045c16a0f5b/raw?se=2026-09-04T19%3A01%3A07Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A19%3A37Z&ske=2026-09-05T03%3A19%3A37Z&sks=b&skv=2026-02-06&sig=d5lH3auJy3a8qqcsSsyGnvGf44nbx0g14LVaXwihu7E%3D'
+          fetch_verified 'c03-a.jpg' '392d579f71c6cb28d902f3d897140190a1f9b8fa0ee294b33ad78224c7cb0de5' 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-48c4-8211-987c-e34464c91d8a/raw?se=2026-09-04T19%3A01%3A07Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A06%3A54Z&ske=2026-09-05T03%3A06%3A54Z&sks=b&skv=2026-02-06&sig=X0fdc2%2BaPOpJzLYtYmIBP%2BU8N/4CvVpBPnPRwQnP2tI%3D'
+          fetch_verified 'c03-b.jpg' 'dc35a6b7c678e0abad198e134b111cdd2e117abaffa44e0fae21478094629b3c' 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-d5f0-8211-82d1-ae04c7049b55/raw?se=2026-09-04T19%3A01%3A07Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A17%3A10Z&ske=2026-09-05T03%3A17%3A10Z&sks=b&skv=2026-02-06&sig=40kgUkJqtrPnRSUpmyvNhr9Qs5mrSc9jIu24DpcUV0A%3D'
+          fetch_verified 'c03-c.jpg' '1e581c8e1d9eb93d882e31f500712a23663c4ce9c699be943ed748bdb9708b29' 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-bf94-8211-b556-b1b764e75391/raw?se=2026-09-04T19%3A01%3A07Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A02%3A09Z&ske=2026-09-05T03%3A02%3A09Z&sks=b&skv=2026-02-06&sig=71bcWD2HJLxCNQKZTdSQSZfZVIiG%2BUc08nyJAdhDZGU%3D'
+          fetch_verified 'open.jpg' 'f0bed4ab230886649871c7d174fa0c0d2d9c3b800c83251f8fb5f6873a64611a' 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-1ed4-8211-a311-bca629bc089f/raw?se=2026-09-04T19%3A01%3A07Z&sp=r&sv=2026-02-06&sr=b&scid=01a06da9-69d4-7356-8baf-cfba8ad74e24&skoid=3cb6de21-012a-49c9-9402-a1ebf8d0bd06&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-04T03%3A09%3A43Z&ske=2026-09-05T03%3A09%3A43Z&sks=b&skv=2026-02-06&sig=pIl3fm0L73mrBydvs1J/GHdcoW4ocnWQHEVb%2BH65LUA%3D'
+      - name: Commit verified assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/assets
+          if git diff --cached --quiet; then
+            echo 'Assets already present.'
+            exit 0
+          fi
+          git commit -m 'Recover exact verified SIPSIK assets [skip ci]'
+          git push
