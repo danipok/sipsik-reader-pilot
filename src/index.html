@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="et">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fbfaf5">
+<title>Sipsik · Digital reader pilot</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div id="app">
+  <section id="opening" class="opening" aria-label="Sipsik book opening">
+    <div class="opening-art-wrap">
+      <img class="opening-art" src="./assets/open.jpg" alt="Original Sipsik front-matter illustration">
+    </div>
+    <div class="opening-panel">
+      <div class="opening-copy"><div class="eyebrow">SIPSIK</div><h1>Digital reader</h1></div>
+      <div class="choice-row" aria-label="Story and narration language"><span class="choice-label">Story &amp; narration</span><button type="button" class="choice-button" id="bookLanguage" aria-haspopup="listbox">Eesti</button></div>
+      <div class="choice-row theme-row" aria-label="Reading background"><span class="choice-label">Reading surface</span><div class="theme-choices" role="radiogroup" aria-label="Reading surface">
+        <button class="theme-dot" data-theme="white" type="button" role="radio" aria-label="White"></button><button class="theme-dot" data-theme="ivory" type="button" role="radio" aria-label="Warm white"></button><button class="theme-dot" data-theme="paper" type="button" role="radio" aria-label="Soft cream"></button><button class="theme-dot" data-theme="gray" type="button" role="radio" aria-label="Very light warm gray"></button>
+      </div></div>
+      <p class="pilot-note">Only the verified Estonian story text is populated in this pilot.</p>
+      <button class="primary-open" id="openBook" type="button">Open book</button>
+    </div>
+  </section>
+
+  <section id="reader" class="reader" hidden aria-label="Sipsik reader">
+    <div class="art-stage" aria-live="polite"><img id="currentArt" class="current-art" src="./assets/a.jpg" alt=""></div>
+    <main id="storyScroller" class="story-scroller" tabindex="0" aria-label="Story text"><article id="story" class="story"></article></main>
+    <footer class="reader-footer" aria-label="Reader controls"><button type="button" class="footer-button" id="settingsButton" aria-label="Reading settings">Aa</button><div class="footer-position" id="positionLabel" aria-live="polite">Chapter 1</div><button type="button" class="footer-button listen-button" id="listenButton" aria-label="Listen from current paragraph">Listen</button></footer>
+  </section>
+</div>
+
+<dialog id="settingsDialog" class="settings-dialog" aria-labelledby="settingsTitle"><form method="dialog">
+  <div class="dialog-head"><h2 id="settingsTitle">Reading settings</h2><button class="icon-close" value="cancel" aria-label="Close settings">×</button></div>
+  <div class="setting-block"><span class="setting-title">Text size</span><div class="size-controls"><button type="button" id="smallerText" aria-label="Smaller text">A−</button><span id="sizeValue">100%</span><button type="button" id="largerText" aria-label="Larger text">A+</button></div></div>
+  <div class="setting-block"><span class="setting-title">Reading surface</span><div class="theme-choices dialog-themes" role="radiogroup" aria-label="Reading surface"><button class="theme-dot" data-theme="white" type="button" role="radio" aria-label="White"></button><button class="theme-dot" data-theme="ivory" type="button" role="radio" aria-label="Warm white"></button><button class="theme-dot" data-theme="paper" type="button" role="radio" aria-label="Soft cream"></button><button class="theme-dot" data-theme="gray" type="button" role="radio" aria-label="Very light warm gray"></button></div></div>
+  <button type="button" class="quiet-action" id="bookBeginning">Book beginning / language</button>
+</form></dialog>
+
+<section id="listenStage" class="listen-stage" hidden aria-label="Picture-first listening">
+  <header class="listen-top"><div><div class="listen-kicker">Listening</div><div id="listenChapter" class="listen-chapter"></div></div><button type="button" id="showText" class="show-text">Show text</button></header>
+  <div class="listen-visual"><img id="listenArt" class="listen-art" src="./assets/a.jpg" alt=""></div>
+  <div class="listen-meta"><span id="listenId">c01-p001</span><span id="listenCount">1 / 65</span></div>
+  <div class="listen-controls"><button type="button" id="audioPrev" aria-label="Previous paragraph">‹</button><button type="button" id="audioToggle" class="audio-primary">Play</button><button type="button" id="audioStop" aria-label="Stop narration">Stop</button><button type="button" id="audioNext" aria-label="Next paragraph">›</button></div>
+</section>
+<div id="toast" class="toast" hidden role="status"></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
