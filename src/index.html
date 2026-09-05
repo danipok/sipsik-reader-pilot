@@ -5,15 +5,26 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#fbfaf5">
 <meta name="color-scheme" content="light">
-<title>Sipsik · Digital reader pilot</title>
+<title>Sipsik · Reader pilot</title>
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <div id="app">
-  <section id="opening" class="opening" aria-label="Sipsik book opening">
+  <section id="home" class="home" aria-label="Sipsik home">
+    <div class="cover-shell">
+      <img id="coverArt" class="cover-art" src="./assets/cover.jpg" alt="Sipsik book cover">
+      <div class="home-language"><label id="globalLanguageLabel" for="globalLanguage">Language</label><select id="globalLanguage" aria-label="Language"><option value="en">English</option><option value="et">Eesti</option></select></div>
+      <button type="button" class="cover-door cover-door-top" data-section="digital"><span class="door-title" id="digitalDoorTitle">Sipsik</span><span class="door-copy" id="digitalDoorCopy">The original stories in a modern digital reader</span></button>
+      <button type="button" class="cover-door cover-door-middle" data-section="adventures"><span class="door-title" id="adventuresDoorTitle">Sipsik’s New Adventures</span><span class="door-copy" id="adventuresDoorCopy">Read new stories. Create the next one.</span></button>
+      <button type="button" class="cover-door cover-door-bottom" data-section="original"><span class="door-title" id="originalDoorTitle">Original</span><span class="door-copy" id="originalDoorCopy">The original physical book · Chapters 1–3</span></button>
+    </div>
+  </section>
+
+  <section id="opening" class="opening" hidden aria-label="Sipsik book opening">
+    <button class="opening-home" id="openingHome" type="button">Home</button>
     <div class="opening-art-wrap"><img class="opening-art" src="./assets/open.jpg" alt="Sipsik on the first illustrated front-matter page"></div>
     <div class="opening-panel">
-      <div class="opening-copy"><div class="eyebrow">SIPSIK</div><h1 id="openingTitle">Digital reader</h1></div>
+      <div class="opening-copy"><div class="eyebrow" id="openingEyebrow">SIPSIK</div><h1 id="openingTitle">Digital reader</h1></div>
       <div class="choice-row"><label class="choice-label" id="storyLabel" for="bookLanguage">Story &amp; narration</label><select class="choice-button" id="bookLanguage" aria-describedby="pilotNote"></select></div>
       <div class="choice-row theme-row"><span class="choice-label" id="surfaceLabel">Reading surface</span><div class="theme-choices" role="radiogroup" aria-label="Reading surface">
         <button class="theme-dot" data-theme="white" type="button" role="radio" aria-label="White"></button><button class="theme-dot" data-theme="ivory" type="button" role="radio" aria-label="Warm white"></button><button class="theme-dot" data-theme="paper" type="button" role="radio" aria-label="Soft cream"></button><button class="theme-dot" data-theme="gray" type="button" role="radio" aria-label="Very light warm gray"></button>
@@ -26,7 +37,19 @@
   <section id="reader" class="reader" hidden aria-label="Sipsik reader">
     <div class="art-stage" id="artStage" aria-live="polite"><img id="currentArt" class="current-art" src="./assets/c01-a.jpg" alt=""></div>
     <main id="storyScroller" class="story-scroller" tabindex="0" aria-label="Story text"><article id="story" class="story"></article></main>
-    <footer class="reader-footer" aria-label="Reader controls"><button type="button" class="footer-button" id="settingsButton" aria-label="Reading settings">Aa</button><div class="footer-position" id="positionLabel" aria-live="polite">Chapter 1 · c01-p001</div><button type="button" class="footer-button listen-button" id="listenButton" aria-label="Listen from current paragraph">Listen</button></footer>
+    <footer class="reader-footer" aria-label="Reader controls"><button type="button" class="footer-button home-button" id="readerHome" aria-label="Home">⌂</button><button type="button" class="footer-button" id="settingsButton" aria-label="Reading settings">Aa</button><div class="footer-position" id="positionLabel" aria-live="polite">Chapter 1 · c01-p001</div><button type="button" class="footer-button listen-button" id="listenButton" aria-label="Listen from current paragraph">Listen</button></footer>
+  </section>
+
+  <section id="original" class="original" hidden aria-label="Original Sipsik book photographs">
+    <header class="original-head"><button type="button" class="original-home" id="originalHome">Home</button><div><div class="eyebrow">SIPSIK</div><h1 id="originalTitle">Original · Chapters 1–3</h1></div></header>
+    <main class="original-pages" id="originalPages">
+      <figure class="original-page"><img src="./assets/original-05.jpg" alt="Original photographed Sipsik source spread 5" loading="eager"><figcaption>4–5</figcaption></figure>
+      <figure class="original-page"><img src="./assets/original-06.jpg" alt="Original photographed Sipsik source spread 6" loading="lazy"><figcaption>6–9</figcaption></figure>
+      <figure class="original-page"><img src="./assets/original-07.jpg" alt="Original photographed Sipsik source spread 7" loading="lazy"><figcaption>10–11</figcaption></figure>
+      <figure class="original-page"><img src="./assets/original-08.jpg" alt="Original photographed Sipsik source spread 8" loading="lazy"><figcaption>12–13</figcaption></figure>
+      <figure class="original-page"><img src="./assets/original-09.jpg" alt="Original photographed Sipsik source spread 9" loading="lazy"><figcaption>14–15</figcaption></figure>
+      <figure class="original-page"><img src="./assets/original-10.jpg" alt="Original photographed Sipsik source spread 10" loading="lazy"><figcaption>16–17</figcaption></figure>
+    </main>
   </section>
 </div>
 
