@@ -11,4 +11,12 @@ const expected=[['chapter-c01','c01-a','c01-p001'],['c01-p015','c01-b','c01-p015
 if(JSON.stringify(HANDOFFS.map(h=>[h.marker,h.image,h.canonical]))!==JSON.stringify(expected))fail('Handoffs differ from locked mapping');
 for(const [id,m] of Object.entries(IMAGE_META)){const p=new URL('./src/'+m.src.replace(/^\.\//,''),import.meta.url);await access(p);const buf=await readFile(p);const hash=createHash('sha256').update(buf).digest('hex');if(hash!==m.sha256)fail(`${id} asset hash mismatch`)}
 if(CHAPTERS.length!==3)fail('Pilot must contain exactly 3 chapters');
-console.log(JSON.stringify({paragraphs:65,chapterCounts:expectedCounts,handoffs:HANDOFFS.length,verseLines:8,assets:Object.keys(IMAGE_META).length,status:'PASS'},null,2));
+const index=await readFile(new URL('./src/index.html',import.meta.url),'utf8');
+const app=await readFile(new URL('./src/app.js',import.meta.url),'utf8');
+if(!index.includes('Sipsik’s New Adventures'))fail('Middle door must be Sipsik’s New Adventures');
+if(!index.includes('Read new stories. Create the next one.'))fail('New Adventures subtitle missing');
+if(!app.includes("adventuresPosition:'sipsik.reader.position.adventures'"))fail('Adventures must have independent reading-position persistence');
+for(const name of ['cover.jpg','original-05.jpg','original-06.jpg','original-07.jpg','original-08.jpg','original-09.jpg','original-10.jpg']){
+  await access(new URL('./src/assets/'+name,import.meta.url)).catch(()=>fail(`Required source-faithful pilot asset missing: ${name}`));
+}
+console.log(JSON.stringify({paragraphs:65,chapterCounts:expectedCounts,handoffs:HANDOFFS.length,verseLines:8,digitalAssets:Object.keys(IMAGE_META).length,homeAndOriginalAssets:7,status:'PASS'},null,2));
