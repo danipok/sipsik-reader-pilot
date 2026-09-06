@@ -11,6 +11,7 @@ const backButton=$('#readerBackButton');
 const moreButton=$('#readerMoreButton');
 const menu=$('#readerQuickMenu');
 const textSubmenu=$('#readerTextSubmenu');
+const languageSubmenu=$('#readerLanguageSubmenu');
 const backgroundSubmenu=$('#readerBackgroundSubmenu');
 const textValue=$('#quickTextValue');
 const scroller=$('#storyScroller');
@@ -28,7 +29,7 @@ function api(){return window.__SIPSIK_TEST__||null}
 function state(){return api()?.getState?.()||{fontScale:1,theme:'ivory'}}
 function markChromeIntroduced(){chromeIntroduced=true;try{localStorage.setItem(CHROME_INTRO_KEY,'1')}catch{}}
 function clearHide(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null}}
-function visibleMenu(){return !menu.hidden||!textSubmenu.hidden||!backgroundSubmenu.hidden}
+function visibleMenu(){return !menu.hidden||!textSubmenu.hidden||!languageSubmenu.hidden||!backgroundSubmenu.hidden}
 function reveal(zone,duration=2400){
   clearHide(); zone.classList.add('is-visible');
   if(!visibleMenu()) hideTimer=setTimeout(()=>zone.classList.remove('is-visible'),duration);
@@ -42,7 +43,7 @@ function conceal(){
   if(visibleMenu())return;
   backZone.classList.remove('is-visible'); moreZone.classList.remove('is-visible');
 }
-function closeSubmenus(){textSubmenu.hidden=true;backgroundSubmenu.hidden=true;$('#quickTextButton').setAttribute('aria-pressed','false');$('#quickBackgroundButton').setAttribute('aria-pressed','false')}
+function closeSubmenus(){textSubmenu.hidden=true;languageSubmenu.hidden=true;backgroundSubmenu.hidden=true;$('#quickTextButton').setAttribute('aria-pressed','false');$('#quickLanguageButton').setAttribute('aria-pressed','false');$('#quickBackgroundButton').setAttribute('aria-pressed','false')}
 function closeMenu(){menu.hidden=true;closeSubmenus();moreButton.setAttribute('aria-expanded','false');conceal()}
 function openMenu(){clearHide();backZone.classList.add('is-visible');moreZone.classList.add('is-visible');menu.hidden=false;moreButton.setAttribute('aria-expanded','true');markChromeIntroduced()}
 function updateTextValue(){const s=state().fontScale||1;textValue.textContent=`${Math.round(s*100)}%`}
@@ -64,7 +65,7 @@ backButton.addEventListener('click',()=>{
   markChromeIntroduced();
   closeMenu();
   const a=api();
-  if(a?.showOpening)a.showOpening();
+  if(a?.showHome)a.showHome();
   else $('#readerHome')?.click();
 });
 
@@ -94,6 +95,14 @@ $('#quickVoiceButton').addEventListener('click',()=>{
   api()?.openListen?.();
 });
 
+$('#quickLanguageButton').addEventListener('click',()=>{
+  const open=languageSubmenu.hidden;
+  closeSubmenus();
+  languageSubmenu.hidden=!open;
+  $('#quickLanguageButton').setAttribute('aria-pressed',String(open));
+  if(open){openMenu();$('#quickBookLanguage')?.focus({preventScroll:true})}
+});
+
 $('#quickTextSmaller').addEventListener('click',()=>{
   const current=state().fontScale||1;const i=Math.max(0,SCALES.indexOf(current));
   api()?.font?.(SCALES[Math.max(0,i-1)]);updateTextValue();
@@ -107,7 +116,7 @@ $$('[data-quick-theme]').forEach(b=>b.addEventListener('click',()=>{api()?.theme
 scroller?.addEventListener('scroll',()=>{if(!visibleMenu())conceal()},{passive:true});
 document.addEventListener('pointerdown',e=>{
   if(!reader||reader.hidden)return;
-  if(menu.contains(e.target)||textSubmenu.contains(e.target)||backgroundSubmenu.contains(e.target)||moreZone.contains(e.target)||backZone.contains(e.target))return;
+  if(menu.contains(e.target)||textSubmenu.contains(e.target)||languageSubmenu.contains(e.target)||backgroundSubmenu.contains(e.target)||moreZone.contains(e.target)||backZone.contains(e.target))return;
   closeMenu();
 },{capture:true});
 
