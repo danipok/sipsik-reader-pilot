@@ -15,7 +15,10 @@ const backgroundSubmenu=$('#readerBackgroundSubmenu');
 const textValue=$('#quickTextValue');
 const scroller=$('#storyScroller');
 const SCALES=[.88,1,1.14,1.28];
+const CHROME_INTRO_KEY='sipsik.reader.chromeIntroduced';
 let hideTimer=null;
+let chromeIntroduced=false;
+try{chromeIntroduced=localStorage.getItem(CHROME_INTRO_KEY)==='1'}catch{}
 
 /* The visual controls are intentionally hidden, but they remain real accessible controls. */
 backZone?.removeAttribute('aria-hidden');
@@ -23,13 +26,14 @@ moreZone?.removeAttribute('aria-hidden');
 
 function api(){return window.__SIPSIK_TEST__||null}
 function state(){return api()?.getState?.()||{fontScale:1,theme:'ivory'}}
+function markChromeIntroduced(){chromeIntroduced=true;try{localStorage.setItem(CHROME_INTRO_KEY,'1')}catch{}}
 function clearHide(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null}}
 function visibleMenu(){return !menu.hidden||!textSubmenu.hidden||!backgroundSubmenu.hidden}
 function reveal(zone,duration=2400){
   clearHide(); zone.classList.add('is-visible');
   if(!visibleMenu()) hideTimer=setTimeout(()=>zone.classList.remove('is-visible'),duration);
 }
-function revealBoth(duration=1800){
+function revealBoth(duration=1900){
   clearHide(); backZone.classList.add('is-visible'); moreZone.classList.add('is-visible');
   hideTimer=setTimeout(()=>{if(!visibleMenu()){backZone.classList.remove('is-visible');moreZone.classList.remove('is-visible')}},duration);
 }
@@ -40,7 +44,7 @@ function conceal(){
 }
 function closeSubmenus(){textSubmenu.hidden=true;backgroundSubmenu.hidden=true;$('#quickTextButton').setAttribute('aria-pressed','false');$('#quickBackgroundButton').setAttribute('aria-pressed','false')}
 function closeMenu(){menu.hidden=true;closeSubmenus();moreButton.setAttribute('aria-expanded','false');conceal()}
-function openMenu(){clearHide();backZone.classList.add('is-visible');moreZone.classList.add('is-visible');menu.hidden=false;moreButton.setAttribute('aria-expanded','true')}
+function openMenu(){clearHide();backZone.classList.add('is-visible');moreZone.classList.add('is-visible');menu.hidden=false;moreButton.setAttribute('aria-expanded','true');markChromeIntroduced()}
 function updateTextValue(){const s=state().fontScale||1;textValue.textContent=`${Math.round(s*100)}%`}
 function updateThemeDots(){const current=state().theme||'ivory';$$('[data-quick-theme]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.quickTheme===current)))}
 
@@ -48,6 +52,7 @@ for(const zone of [backZone,moreZone]){
   zone.addEventListener('pointerenter',()=>reveal(zone),{passive:true});
   zone.addEventListener('focusin',()=>reveal(zone));
   zone.addEventListener('pointerdown',e=>{
+    markChromeIntroduced();
     if(!zone.classList.contains('is-visible')){
       reveal(zone,3200);
       if(e.target===zone)e.preventDefault();
@@ -56,6 +61,7 @@ for(const zone of [backZone,moreZone]){
 }
 
 backButton.addEventListener('click',()=>{
+  markChromeIntroduced();
   closeMenu();
   const a=api();
   if(a?.showOpening)a.showOpening();
@@ -63,6 +69,7 @@ backButton.addEventListener('click',()=>{
 });
 
 moreButton.addEventListener('click',()=>{
+  markChromeIntroduced();
   if(menu.hidden)openMenu();else closeMenu();
 });
 
@@ -107,7 +114,10 @@ document.addEventListener('pointerdown',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){closeMenu();moreButton.focus({preventScroll:true})}});
 
 new MutationObserver(()=>{
-  if(!reader.hidden){closeMenu();requestAnimationFrame(()=>revealBoth(1900))}
+  if(!reader.hidden){
+    closeMenu();
+    if(!chromeIntroduced){markChromeIntroduced();requestAnimationFrame(()=>revealBoth(1900))}
+  }
 }).observe(reader,{attributes:true,attributeFilter:['hidden']});
 
 /* Keep the locked front-page wording exact even while the legacy localisation layer is being consolidated. */
