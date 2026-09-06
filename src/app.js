@@ -41,7 +41,7 @@ let bookLanguage=getStore(KEYS.bookLanguage,null);
 if(!verifiedBookLanguage(bookLanguage)) bookLanguage=verifiedBookLanguage(globalLanguage)?globalLanguage:'et';
 setStore(KEYS.bookLanguage,bookLanguage);
 
-const home=$('#home'),opening=$('#opening'),reader=$('#reader'),original=$('#original'),story=$('#story'),scroller=$('#storyScroller'),currentArt=$('#currentArt'),artStage=$('#artStage'),positionLabel=$('#positionLabel'),settingsDialog=$('#settingsDialog'),sizeValue=$('#sizeValue'),listenStage=$('#listenStage'),listenArt=$('#listenArt'),listenChapter=$('#listenChapter'),listenId=$('#listenId'),listenCount=$('#listenCount'),audioToggle=$('#audioToggle'),toast=$('#toast'),bookLanguageSelect=$('#bookLanguage'),globalLanguageSelect=$('#globalLanguage');
+const home=$('#home'),reader=$('#reader'),original=$('#original'),story=$('#story'),scroller=$('#storyScroller'),currentArt=$('#currentArt'),artStage=$('#artStage'),positionLabel=$('#positionLabel'),settingsDialog=$('#settingsDialog'),sizeValue=$('#sizeValue'),listenStage=$('#listenStage'),listenArt=$('#listenArt'),listenChapter=$('#listenChapter'),listenId=$('#listenId'),listenCount=$('#listenCount'),audioToggle=$('#audioToggle'),toast=$('#toast'),bookLanguageSelect=$('#quickBookLanguage'),globalLanguageSelect=$('#globalLanguage');
 
 let currentSection='digital';
 let theme=THEMES.includes(getStore(KEYS.theme,'ivory'))?getStore(KEYS.theme,'ivory'):'ivory';
@@ -58,13 +58,9 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 function localizeUI(){
   $('#globalLanguageLabel').textContent=ui.language; globalLanguageSelect.value=globalLanguage;
   $('#digitalDoorTitle').textContent=ui.digitalTitle; $('#digitalDoorCopy').textContent=ui.digitalCopy; $('#adventuresDoorTitle').textContent=ui.adventuresTitle; $('#adventuresDoorCopy').textContent=ui.adventuresCopy; $('#originalDoorTitle').textContent=ui.originalTitle; $('#originalDoorCopy').textContent=ui.originalCopy;
-  $('#storyLabel').textContent=ui.storyNarration; $('#surfaceLabel').textContent=ui.readingSurface; $('#pilotNote').textContent=ui.pilotNote; $('#openBook').textContent=ui.openBook; $('#openingHome').textContent=ui.home; $('#originalHome').textContent=ui.home; $('#originalTitle').textContent=ui.originalHeading;
+  $('#originalHome').textContent=ui.home; $('#originalTitle').textContent=ui.originalHeading;
   $('#settingsTitle').textContent=ui.settings; $('#textSizeTitle').textContent=ui.textSize; $('#settingsSurfaceTitle').textContent=ui.readingSurface; $('#bookBeginning').textContent=ui.bookBeginning;
   $('#listenButton').textContent=ui.listen; $('#listenKicker').textContent=ui.listening; $('#showText').textContent=ui.showText; $('#audioStop').textContent=ui.stop; $('#readerHome').setAttribute('aria-label',ui.home);
-  updateOpeningCopy();
-}
-function updateOpeningCopy(){
-  if(currentSection==='adventures'){$('#openingEyebrow').textContent=ui.adventuresTitle.toUpperCase();$('#openingTitle').textContent=ui.adventuresCopy}else{$('#openingEyebrow').textContent='SIPSIK';$('#openingTitle').textContent=ui.digitalReader}
 }
 
 function applyTheme(n){
@@ -84,13 +80,32 @@ function renderLanguageChoice(){
 }
 renderLanguageChoice();
 
+const ART_WASH={
+  'c01-a':'#d99691','c01-b':'#b78355','c02-a':'#c7b98f','c02-b':'#aebca4',
+  'c03-a':'#c4a644','c03-b':'#c9c3a0','c03-c':'#809692'
+};
 function renderStory(){
   story.innerHTML='';
+  const handoffByMarker=new Map(HANDOFFS.map(h=>[h.marker,h]));
+  let copy=null;
+  const startSegment=h=>{
+    const m=IMAGE_META[h.image];
+    const section=document.createElement('section');
+    section.className='story-segment';section.dataset.image=h.image;section.dataset.handoffMarker=h.marker;
+    section.style.setProperty('--art-wash',ART_WASH[h.image]||'#c7bda8');
+    const art=document.createElement('figure');art.className='segment-art';art.setAttribute('aria-label',m.alt);
+    art.innerHTML=`<div class="segment-art-surface"><img class="segment-art-image art-${escapeHtml(h.image)}" src="${escapeHtml(m.src)}" alt="${escapeHtml(m.alt)}" decoding="async"></div>`;
+    copy=document.createElement('div');copy.className='segment-copy';
+    section.append(art,copy);story.appendChild(section);
+  };
   for(const c of CHAPTERS){
+    startSegment(handoffByMarker.get(`chapter-${c.id}`));
     const h=document.createElement('section'); h.className='chapter-heading'; h.id=`chapter-${c.id}`; h.dataset.image=c.image; h.dataset.canonical=c.first;
-    h.innerHTML=`<p class="chapter-number">${escapeHtml(ui.chapter)} ${Number(c.id.slice(1))}</p><h2>${escapeHtml(c.title)}</h2>`; story.appendChild(h);
+    h.innerHTML=`<p class="chapter-number">${escapeHtml(ui.chapter)} ${Number(c.id.slice(1))}</p><h2>${escapeHtml(c.title)}</h2>`; copy.appendChild(h);
     for(const p of PARAGRAPHS.filter(p=>p.id.startsWith(c.id+'-'))){
-      const e=document.createElement('p'); e.id=p.id; e.lang='et'; e.className='story-paragraph'+(p.id==='c03-p031'?' verse':''); e.dataset.canonical=p.id; e.textContent=p.text; story.appendChild(e);
+      const handoff=handoffByMarker.get(p.id);if(handoff)startSegment(handoff);
+      const e=document.createElement('p'); e.id=p.id; e.lang='et'; e.className='story-paragraph'+(p.id==='c03-p031'?' verse':''); e.dataset.canonical=p.id; e.textContent=p.text;
+      copy.appendChild(e);
     }
   }
 }
@@ -107,13 +122,16 @@ for(const m of Object.values(IMAGE_META)){const img=new Image();img.decoding='as
 
 function setArt(imageId,{listen=false}={}){
   const m=IMAGE_META[imageId]||IMAGE_META['c01-a']; const t=listen?listenArt:currentArt;
+  if(listen)listenStage.style.setProperty('--art-wash',ART_WASH[imageId]||'#c7bda8');
   if(t.dataset.image===imageId)return;
   const request=++artRequest; if(!listen)t.classList.add('is-changing');
   const p=new Image(); p.decoding='async'; p.onload=()=>{if(request!==artRequest&&!listen)return;t.src=m.src;t.alt=m.alt;t.dataset.image=imageId;if(!listen){currentImage=imageId;artStage.dataset.image=imageId;requestAnimationFrame(()=>t.classList.remove('is-changing'))}}; p.src=m.src;
 }
-function markerOffsets(){return HANDOFFS.map(h=>({...h,el:document.getElementById(h.marker)})).filter(x=>x.el).map(x=>({...x,top:x.el.offsetTop}))}
+function artHeight(){return $('.segment-art',story)?.offsetHeight||0}
+function contentTop(el){return el.getBoundingClientRect().top-story.getBoundingClientRect().top}
+function markerOffsets(){const h=artHeight();return HANDOFFS.map(x=>({...x,el:$(`.story-segment[data-handoff-marker="${x.marker}"]`,story)})).filter(x=>x.el).map(x=>({...x,top:Math.max(0,contentTop(x.el)-h)}))}
 function activeHandoff(){const y=scroller.scrollTop+3,ms=markerOffsets();let a=ms[0];for(const m of ms){if(m.top<=y+1)a=m;else break}return a}
-function firstVisibleParagraph(){const y=scroller.scrollTop+8,els=$$('.story-paragraph');let c=els[0];for(const e of els){if(e.offsetTop<=y)c=e;else break}return c?.id||'c01-p001'}
+function firstVisibleParagraph(){const y=scroller.scrollTop+artHeight()+12,els=$$('.story-paragraph');let c=els[0];for(const e of els){if(contentTop(e)<=y)c=e;else break}return c?.id||'c01-p001'}
 function canonicalIndex(id){return PARAGRAPHS.findIndex(p=>p.id===id)}
 function savePosition(id=currentCanonical){setStore(positionKey(),id)}
 function syncFromScroll(){
@@ -127,13 +145,12 @@ scroller.addEventListener('scroll',()=>{userHasScrolled=true;syncFromScroll()},{
 
 function restoreCanonical(id,{smooth=false,save=true}={}){
   const e=document.getElementById(id); if(!e)return;
-  setArt(imageForCanonical(id)); scroller.scrollTo({top:Math.max(0,e.offsetTop-2),behavior:smooth?'smooth':'auto'}); currentCanonical=id; narrationIndex=Math.max(0,canonicalIndex(id)); positionLabel.textContent=`${ui.chapter} ${chapterNumberForCanonical(id)} · ${id}`; if(save)savePosition(id);
+  setArt(imageForCanonical(id)); scroller.scrollTo({top:Math.max(0,contentTop(e)-artHeight()-12),behavior:smooth?'smooth':'auto'}); currentCanonical=id; narrationIndex=Math.max(0,canonicalIndex(id)); positionLabel.textContent=`${ui.chapter} ${chapterNumberForCanonical(id)} · ${id}`; if(save)savePosition(id);
 }
-function hideProductViews(){home.hidden=true;opening.hidden=true;reader.hidden=true;original.hidden=true;listenStage.hidden=true}
+function hideProductViews(){home.hidden=true;reader.hidden=true;original.hidden=true;listenStage.hidden=true}
 function showHome(){
   if(!reader.hidden)savePosition(); if(!original.hidden)setStore(KEYS.originalPosition,String(original.scrollTop||0)); cancelNarration(); hideProductViews(); home.hidden=false; document.body.dataset.section='home';
 }
-function showOpening(){cancelNarration();hideProductViews();opening.hidden=false;opening.scrollTop=0;document.body.dataset.section=currentSection;updateOpeningCopy();requestAnimationFrame(()=>bookLanguageSelect.focus({preventScroll:true}))}
 function showReader({restore=true}={}){
   hideProductViews(); reader.hidden=false;document.body.dataset.section=currentSection;setStore(seenKey(),'1');
   requestAnimationFrame(()=>{
@@ -144,15 +161,14 @@ function showReader({restore=true}={}){
 function showOriginal(){cancelNarration();hideProductViews();original.hidden=false;document.body.dataset.section='original';requestAnimationFrame(()=>{original.scrollTop=Number(getStore(KEYS.originalPosition,'0'))||0})}
 function openSection(section){
   if(section==='original'){showOriginal();return}
-  currentSection=section==='adventures'?'adventures':'digital';currentCanonical=storedPosition();narrationIndex=Math.max(0,canonicalIndex(currentCanonical));showOpening();
+  currentSection=section==='adventures'?'adventures':'digital';currentCanonical=storedPosition();narrationIndex=Math.max(0,canonicalIndex(currentCanonical));showReader({restore:true});
 }
 
 $$('[data-section]').forEach(b=>b.addEventListener('click',()=>openSection(b.dataset.section)));
-$('#openingHome').addEventListener('click',showHome);$('#readerHome').addEventListener('click',showHome);$('#originalHome').addEventListener('click',showHome);
-$('#openBook').addEventListener('click',()=>showReader({restore:getStore(seenKey(),'0')==='1'}));
+$('#readerHome').addEventListener('click',showHome);$('#originalHome').addEventListener('click',showHome);
 bookLanguageSelect.addEventListener('change',()=>{if(verifiedBookLanguage(bookLanguageSelect.value)){bookLanguage=bookLanguageSelect.value;setStore(KEYS.bookLanguage,bookLanguage)}});
 globalLanguageSelect.addEventListener('change',()=>{const n=globalLanguageSelect.value;if(n!=='en'&&n!=='et')return;setStore(KEYS.globalLanguage,n);delStore(KEYS.bookLanguage);const u=new URL(location.href);u.searchParams.set('globalLanguage',n);location.assign(u.toString())});
-$('#bookBeginning').addEventListener('click',()=>{settingsDialog.close();showOpening()});
+$('#bookBeginning').addEventListener('click',()=>{settingsDialog.close();showHome()});
 $$('[data-theme]').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.theme)));
 $('#settingsButton').addEventListener('click',()=>settingsDialog.showModal());
 $('#smallerText').addEventListener('click',()=>{const i=SCALES.indexOf(fontScale);applyFontScale(SCALES[Math.max(0,i-1)])});
@@ -184,6 +200,6 @@ localizeUI();setArt('c01-a');syncFromScroll();showHome();
 window.__SIPSIK_TEST__={
   paragraphs:PARAGRAPHS.length,chapterCounts:Object.fromEntries(CHAPTERS.map(c=>[c.id,PARAGRAPHS.filter(p=>p.id.startsWith(c.id+'-')).length])),handoffs:HANDOFFS.map(h=>({...h})),verseLines:PARAGRAPHS.find(p=>p.id==='c03-p031').text.split('\n').length,
   assets:Object.fromEntries(Object.entries(IMAGE_META).map(([k,v])=>[k,{src:v.src,sha256:v.sha256,source:v.source}])),
-  getState:()=>({theme,fontScale,currentCanonical,currentImage,bookLanguage,globalLanguage,currentSection,storageOK,view:!listenStage.hidden?'listen':!reader.hidden?'reader':!opening.hidden?'opening':!original.hidden?'original':'home'}),
-  openSection,goTo:id=>{showReader({restore:false});requestAnimationFrame(()=>restoreCanonical(id,{smooth:false,save:true}))},theme:n=>applyTheme(n),font:s=>applyFontScale(s),openListen:()=>openListening(),showText:()=>$('#showText').click(),showOpening,showHome
+  getState:()=>({theme,fontScale,currentCanonical,currentImage,bookLanguage,globalLanguage,currentSection,storageOK,view:!listenStage.hidden?'listen':!reader.hidden?'reader':!original.hidden?'original':'home'}),
+  openSection,goTo:id=>{showReader({restore:false});requestAnimationFrame(()=>restoreCanonical(id,{smooth:false,save:true}))},theme:n=>applyTheme(n),font:s=>applyFontScale(s),openListen:()=>openListening(),showText:()=>$('#showText').click(),showHome
 };
