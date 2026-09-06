@@ -22,7 +22,10 @@ if(!index.includes('id="originalDoorCopy">The original physical book<'))fail('Fr
 if(/originalCopy:'[^']*(?:Chapters|peatükid) 1[–-]3'/.test(app))fail('Localized front-page Original box must not show chapter count');
 if(!app.includes("adventuresPosition:'sipsik.reader.position.adventures'"))fail('Adventures must have independent reading-position persistence');
 if(!index.includes('id="readerQuickMenu"'))fail('Reader quick menu missing');
-if(!index.includes('id="quickTextButton"')||!index.includes('id="quickVoiceButton"')||!index.includes('id="quickBackgroundButton"'))fail('Aa / Voice / Background quick controls missing');
+if(!index.includes('id="quickTextButton"')||!index.includes('id="quickVoiceButton"')||!index.includes('id="quickLanguageButton"')||!index.includes('id="quickBackgroundButton"'))fail('Aa / Voice / Language / Background quick controls missing');
+if(index.includes('id="opening"')||index.includes('id="openBook"'))fail('Digital and Adventures must open directly without introductory pages');
+if(!index.includes('id="quickBookLanguage"'))fail('In-reader language choice missing');
+if(!app.includes("section.className='story-segment'")||!app.includes("section.dataset.handoffMarker=h.marker"))fail('Paragraph-driven sticky picture sections missing');
 if(!chrome.includes('sipsik.reader.chromeIntroduced'))fail('First-time-only reader chrome discovery persistence missing');
 
 const sourceAssets={
