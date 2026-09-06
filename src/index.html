@@ -26,31 +26,20 @@
     </div>
   </section>
 
-  <section id="opening" class="opening" hidden aria-label="Sipsik book opening">
-    <button class="opening-home" id="openingHome" type="button">Home</button>
-    <div class="opening-art-wrap"><img class="opening-art" src="./assets/open.jpg" alt="Sipsik on the first illustrated front-matter page"></div>
-    <div class="opening-panel">
-      <div class="opening-copy"><div class="eyebrow" id="openingEyebrow">SIPSIK</div><h1 id="openingTitle">Digital reader</h1></div>
-      <div class="choice-row"><label class="choice-label" id="storyLabel" for="bookLanguage">Story &amp; narration</label><select class="choice-button" id="bookLanguage" aria-describedby="pilotNote"></select></div>
-      <div class="choice-row theme-row" hidden><span class="choice-label" id="surfaceLabel">Reading surface</span><div class="theme-choices" role="radiogroup" aria-label="Reading surface">
-        <button class="theme-dot" data-theme="white" type="button" role="radio" aria-label="White"></button><button class="theme-dot" data-theme="ivory" type="button" role="radio" aria-label="Warm white"></button><button class="theme-dot" data-theme="paper" type="button" role="radio" aria-label="Soft cream"></button><button class="theme-dot" data-theme="gray" type="button" role="radio" aria-label="Very light warm gray"></button>
-      </div></div>
-      <p class="pilot-note" id="pilotNote">Only the verified Estonian story and narration text is populated in this pilot.</p>
-      <button class="primary-open" id="openBook" type="button">Open book</button>
-    </div>
-  </section>
-
   <section id="reader" class="reader" hidden aria-label="Sipsik reader">
     <div class="reader-corner-zone reader-corner-zone-left" id="readerBackHotspot" aria-hidden="true">
-      <button type="button" class="reader-corner-button reader-back-button" id="readerBackButton" aria-label="Back to book opening">‹</button>
+      <button type="button" class="reader-corner-button reader-back-button" id="readerBackButton" aria-label="Back to Sipsik front page">‹</button>
     </div>
     <div class="reader-corner-zone reader-corner-zone-right" id="readerMoreHotspot" aria-hidden="true">
-      <button type="button" class="reader-corner-button reader-more-button" id="readerMoreButton" aria-label="Reader options" aria-expanded="false" aria-controls="readerQuickMenu">•••</button>
+      <button type="button" class="reader-corner-button reader-more-button" id="readerMoreButton" aria-label="Reader options" aria-expanded="false" aria-controls="readerQuickMenu">…</button>
     </div>
     <div class="reader-quick-menu" id="readerQuickMenu" hidden aria-label="Reader options">
       <button type="button" class="quick-icon-button" id="quickTextButton" aria-label="Text size">Aa</button>
       <button type="button" class="quick-icon-button" id="quickVoiceButton" aria-label="Listen">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4zm12.5-2.5a6 6 0 0 1 0 9M18.8 5a9.3 9.3 0 0 1 0 14"/></svg>
+      </button>
+      <button type="button" class="quick-icon-button" id="quickLanguageButton" aria-label="Story and narration language">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3c2.2 2.5 3.3 5.5 3.3 9S14.2 18.5 12 21M12 3C9.8 5.5 8.7 8.5 8.7 12S9.8 18.5 12 21"/></svg>
       </button>
       <button type="button" class="quick-icon-button" id="quickBackgroundButton" aria-label="Reading background">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>
@@ -59,13 +48,16 @@
     <div class="reader-quick-submenu reader-text-submenu" id="readerTextSubmenu" hidden>
       <button type="button" id="quickTextSmaller" aria-label="Smaller text">A−</button><output id="quickTextValue">100%</output><button type="button" id="quickTextLarger" aria-label="Larger text">A+</button>
     </div>
+    <div class="reader-quick-submenu reader-language-submenu" id="readerLanguageSubmenu" hidden>
+      <select id="quickBookLanguage" aria-label="Story and narration language"></select>
+    </div>
     <div class="reader-quick-submenu reader-background-submenu" id="readerBackgroundSubmenu" hidden aria-label="Reading background">
       <button class="quick-theme-dot" data-quick-theme="white" type="button" aria-label="White"></button>
       <button class="quick-theme-dot" data-quick-theme="ivory" type="button" aria-label="Warm white"></button>
       <button class="quick-theme-dot" data-quick-theme="paper" type="button" aria-label="Soft cream"></button>
       <button class="quick-theme-dot" data-quick-theme="gray" type="button" aria-label="Very light warm gray"></button>
     </div>
-    <div class="art-stage" id="artStage" aria-live="polite"><img id="currentArt" class="current-art" src="./assets/c01-a.jpg" alt=""></div>
+    <div class="art-stage" id="artStage" hidden aria-hidden="true"><img id="currentArt" class="current-art" src="./assets/c01-a.jpg" alt=""></div>
     <main id="storyScroller" class="story-scroller" tabindex="0" aria-label="Story text"><article id="story" class="story"></article></main>
     <footer class="reader-footer" aria-label="Reader controls"><button type="button" class="footer-button home-button" id="readerHome" aria-label="Home">⌂</button><button type="button" class="footer-button" id="settingsButton" aria-label="Reading settings">Aa</button><div class="footer-position" id="positionLabel" aria-live="polite">Chapter 1 · c01-p001</div><button type="button" class="footer-button listen-button" id="listenButton" aria-label="Listen from current paragraph">Listen</button></footer>
   </section>
