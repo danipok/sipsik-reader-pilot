@@ -11,11 +11,11 @@ const THEMES=['white','ivory','paper','gray'];
 const SCALES=[.88,1,1.14,1.28];
 const UI={
   en:{
-    language:'Language',digitalTitle:'Sipsik',digitalCopy:'The original stories in a modern digital reader',adventuresTitle:'Sipsik’s New Adventures',adventuresCopy:'Read new stories. Create the next one.',originalTitle:'Original',originalCopy:'The original physical book · Chapters 1–3',
+    language:'Language',digitalTitle:'Sipsik',digitalCopy:'The original stories',adventuresTitle:'Sipsik’s New Adventures',adventuresCopy:'Read new stories. Create the next one.',originalTitle:'Original',originalCopy:'The original physical book',
     digitalReader:'Digital reader',storyNarration:'Story & narration',readingSurface:'Reading surface',pilotNote:'Only the verified Estonian story and narration text is populated in this pilot.',openBook:'Open book',home:'Home',settings:'Reading settings',textSize:'Text size',bookBeginning:'Book beginning / language',listen:'Listen',listening:'Listening',showText:'Show text',play:'Play',pause:'Pause',resume:'Resume',stop:'Stop',chapter:'Chapter',originalHeading:'Original · Chapters 1–3',speechUnavailable:'Speech synthesis is not available in this browser.'
   },
   et:{
-    language:'Keel',digitalTitle:'Sipsik',digitalCopy:'Algupärased lood tänapäevases digilugejas',adventuresTitle:'Sipsiku uued seiklused',adventuresCopy:'Loe uusi lugusid. Loo järgmine ise.',originalTitle:'Originaal',originalCopy:'Algupärane füüsiline raamat · peatükid 1–3',
+    language:'Keel',digitalTitle:'Sipsik',digitalCopy:'Algupärased lood',adventuresTitle:'Sipsiku uued seiklused',adventuresCopy:'Loe uusi lugusid. Loo järgmine ise.',originalTitle:'Originaal',originalCopy:'Algupärane füüsiline raamat',
     digitalReader:'Digitaalne lugeja',storyNarration:'Lugu ja kuulamine',readingSurface:'Lugemistaust',pilotNote:'Selles piloodis on kinnitatud ainult eestikeelne lugu ja jutustus.',openBook:'Ava raamat',home:'Avaleht',settings:'Lugemise seaded',textSize:'Teksti suurus',bookBeginning:'Raamatu algus / keel',listen:'Kuula',listening:'Kuulamine',showText:'Näita teksti',play:'Esita',pause:'Paus',resume:'Jätka',stop:'Peata',chapter:'Peatükk',originalHeading:'Originaal · peatükid 1–3',speechUnavailable:'Selles brauseris ei ole kõnesüntees saadaval.'
   }
 };
