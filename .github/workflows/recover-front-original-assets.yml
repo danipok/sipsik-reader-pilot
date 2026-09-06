@@ -1,0 +1,105 @@
+name: Recover locked SIPSIK front and Original assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/recover-front-original-assets.yml
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Recover exact source assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p src/assets /tmp/sipsik-transfer
+          cat >/tmp/decode_sipsik_png.py <<'PY'
+          import sys, struct, zlib, hashlib
+          out=sys.argv[1]; expected_size=int(sys.argv[2]); expected_sha=sys.argv[3]
+          specs=sys.argv[4:]
+          result=bytearray()
+          for spec in specs:
+              path,want_len=spec.rsplit(':',1); want_len=int(want_len)
+              b=open(path,'rb').read()
+              assert b[:8]==b'\x89PNG\r\n\x1a\n', path
+              pos=8; width=height=None; ids=[]
+              while pos<len(b):
+                  n=struct.unpack('>I',b[pos:pos+4])[0]; typ=b[pos+4:pos+8]; dat=b[pos+8:pos+8+n]; pos += 12+n
+                  if typ==b'IHDR': width,height,depth,color,comp,filt,inter=struct.unpack('>IIBBBBB',dat); assert depth==8 and color==2 and inter==0
+                  elif typ==b'IDAT': ids.append(dat)
+                  elif typ==b'IEND': break
+              raw=zlib.decompress(b''.join(ids)); rowbytes=width*3; payload=bytearray(); off=0
+              for _ in range(height):
+                  assert raw[off]==0; off += 1; payload += raw[off:off+rowbytes]; off += rowbytes
+              result += payload[:want_len]
+          assert len(result)==expected_size,(len(result),expected_size)
+          got=hashlib.sha256(result).hexdigest(); assert got==expected_sha,(got,expected_sha)
+          open(out,'wb').write(result)
+          print(out, len(result), got)
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprseasia.blob.core.windows.net/files/00000000-a08c-8207-a1d9-5dde416af78b/raw?se=2026-09-06T09%3A57%3A27Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T01%3A10%3A44Z&ske=2026-09-07T01%3A10%3A44Z&sks=b&skv=2026-02-06&sig=Jyxy6RKLpYX76jQWXGZHFaZtCuuFwdYPHS4kcLWqzQM%3D' -o src/assets/cover.png
+          printf '%s  %s\n' '00be6356858b0568892d046e3d50baef87e4498548eedbedf512e426d53eaf57' 'src/assets/cover.png' | sha256sum -c -
+          git add src/assets/cover.png
+          git commit -m 'Add locked source-faithful front cover asset [skip ci]'
+          git push
+
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-d758-8211-8210-6491b602ee8f/raw?se=2026-09-06T10%3A00%3A58Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A24%3A34Z&ske=2026-09-07T04%3A24%3A34Z&sks=b&skv=2026-02-06&sig=ijkS/lVqq4BPi17SsIO6cyHqtrTQX8LjfDFFvsowZWc%3D' -o /tmp/sipsik-transfer/05-0.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-00d8-8211-88d8-cfe6c78e269e/raw?se=2026-09-06T10%3A00%3A58Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T03%3A12%3A37Z&ske=2026-09-07T03%3A12%3A37Z&sks=b&skv=2026-02-06&sig=TZcHRLk3U87WDCQuoJkAeI2gzPNk4WL1aILhYP04Qu8%3D' -o /tmp/sipsik-transfer/05-1.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-5590-8211-a64e-00df426b0dad/raw?se=2026-09-06T10%3A00%3A58Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T03%3A24%3A43Z&ske=2026-09-07T03%3A24%3A43Z&sks=b&skv=2026-02-06&sig=0ruTcNNWl7%2B9VHDeMlHqg6uAHCY9EFXMGocHMCUmqYM%3D' -o /tmp/sipsik-transfer/05-2.png
+          printf '%s  %s\n' '2b90bd576ccaccbcb3fd2cc18a54085873c958065e07903b9ff859ad9836f8f2' /tmp/sipsik-transfer/05-0.png '3baa6b56d42a080629a27779ee53306163100c3338a3e9eb29864eee41ad3fa1' /tmp/sipsik-transfer/05-1.png 'a19cf6faf1798794a29b3a1d18c0a120ef12677e86b86dda098f00839d8ac2c9' /tmp/sipsik-transfer/05-2.png | sha256sum -c -
+          python3 /tmp/decode_sipsik_png.py src/assets/original-05.jpg 45389256 13fb9a50809b5810dcc10e248d155f5a1496c1a88df4bce194940ced5cb2afc9 /tmp/sipsik-transfer/05-0.png:16777216 /tmp/sipsik-transfer/05-1.png:16777216 /tmp/sipsik-transfer/05-2.png:11834824
+          git add src/assets/original-05.jpg && git commit -m 'Add untouched Original spread 5 [skip ci]' && git push
+          rm -f /tmp/sipsik-transfer/05-*.png
+
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-d53c-8211-b834-dc53bc15367a/raw?se=2026-09-06T10%3A01%3A28Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T06%3A39%3A02Z&ske=2026-09-07T06%3A39%3A02Z&sks=b&skv=2026-02-06&sig=9vsrIj/goccUSW8utiEjlPihsRHpMlMy0lTL0KssgJ8%3D' -o /tmp/sipsik-transfer/06-0.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-91f0-8211-ad60-169614e1c528/raw?se=2026-09-06T10%3A01%3A28Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A46%3A48Z&ske=2026-09-07T04%3A46%3A48Z&sks=b&skv=2026-02-06&sig=7V3%2BjobhOBtKa7d5bklQTeQ1dx%2BbQoS1DPgMmzZo/c0%3D' -o /tmp/sipsik-transfer/06-1.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprseasia.blob.core.windows.net/files/00000000-87dc-8207-87b9-27ba0119ae90/raw?se=2026-09-06T10%3A01%3A28Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A23%3A40Z&ske=2026-09-07T04%3A23%3A40Z&sks=b&skv=2026-02-06&sig=d23r1E1peYxmETrPGEFFJtmldioTd1T/qdzDOtBxNYU%3D' -o /tmp/sipsik-transfer/06-2.png
+          printf '%s  %s\n' '99d58ffc45052c2fe8ea3db7998191e6ec4dee41f69be395d0642ddea97b8be5' /tmp/sipsik-transfer/06-0.png 'bbd94f8baa08840fc59387a549ed2e11db1a58c9c8419658cd3aa13a9abef5e4' /tmp/sipsik-transfer/06-1.png 'b7cba189651ca5f6f4472d2ede9fb0d08a4629d05e34a9cc584cbdabe6d3cfdc' /tmp/sipsik-transfer/06-2.png | sha256sum -c -
+          python3 /tmp/decode_sipsik_png.py src/assets/original-06.jpg 38796372 8d5410b9ec7f574b7e2e4643c72ae7f62ea7c22f1c2dca2ef3d51047b995ff2c /tmp/sipsik-transfer/06-0.png:16777216 /tmp/sipsik-transfer/06-1.png:16777216 /tmp/sipsik-transfer/06-2.png:5241940
+          git add src/assets/original-06.jpg && git commit -m 'Add untouched Original spread 6 [skip ci]' && git push
+          rm -f /tmp/sipsik-transfer/06-*.png
+
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprseasia.blob.core.windows.net/files/00000000-46a8-8207-9713-e92f10ac8a32/raw?se=2026-09-06T10%3A01%3A59Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T06%3A02%3A28Z&ske=2026-09-07T06%3A02%3A28Z&sks=b&skv=2026-02-06&sig=if5ADGIducu/KvudApE4RprQ5VxvopOLoyBFt2i/a7A%3D' -o /tmp/sipsik-transfer/07-0.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-6b48-8211-b6a8-cf1d39d1d2f7/raw?se=2026-09-06T10%3A01%3A59Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T00%3A12%3A52Z&ske=2026-09-07T00%3A12%3A52Z&sks=b&skv=2026-02-06&sig=w09DwKPqbxVNMnOOoWMIwozZyfL3yMPup%2BbWEz7B1Kw%3D' -o /tmp/sipsik-transfer/07-1.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-f808-8211-84cc-b0697e38a070/raw?se=2026-09-06T10%3A01%3A59Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T03%3A24%3A43Z&ske=2026-09-07T03%3A24%3A43Z&sks=b&skv=2026-02-06&sig=SWuNA5qRjHtPMbj9iCBFvW%2BF2Z0CIGkW2HXL1mgaBa4%3D' -o /tmp/sipsik-transfer/07-2.png
+          printf '%s  %s\n' '56f2c77e52851fac3d2c68c6bbceb7f306d4ca5f32dab5e7996aeb7604c511f9' /tmp/sipsik-transfer/07-0.png 'f14d5c519f330a90c926c534b91b35549bd9ee6b53ebe12e2e042b568e4b6db7' /tmp/sipsik-transfer/07-1.png '732cb2e1bfc40de6e4dc171d31264b836693cf9f75a13a5ddbde276be39be156' /tmp/sipsik-transfer/07-2.png | sha256sum -c -
+          python3 /tmp/decode_sipsik_png.py src/assets/original-07.jpg 49892483 45884196609f7747d436bdafd804a88f24b4eb481d0dac453d350d87bae1dfa9 /tmp/sipsik-transfer/07-0.png:16777216 /tmp/sipsik-transfer/07-1.png:16777216 /tmp/sipsik-transfer/07-2.png:16338051
+          git add src/assets/original-07.jpg && git commit -m 'Add untouched Original spread 7 [skip ci]' && git push
+          rm -f /tmp/sipsik-transfer/07-*.png
+
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-1020-8211-9a9c-5042dd32b2f8/raw?se=2026-09-06T10%3A02%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A35%3A48Z&ske=2026-09-07T04%3A35%3A48Z&sks=b&skv=2026-02-06&sig=%2BhCd9WScdJ0uNEdkX%2ByFMiqbZCYCC0IMpXhlamYvWAQ%3D' -o /tmp/sipsik-transfer/08-0.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprcentralindia.blob.core.windows.net/files/00000000-8c74-8208-956d-45c8a92e25ee/raw?se=2026-09-06T10%3A02%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T03%3A48%3A46Z&ske=2026-09-07T03%3A48%3A46Z&sks=b&skv=2026-02-06&sig=Wp3ttmDEkRXtsOkoNxQxj0iR4z7IjOAJcO/panrkfGI%3D' -o /tmp/sipsik-transfer/08-1.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-53f8-8211-944a-9ecdb6cd2e99/raw?se=2026-09-06T10%3A02%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A23%3A41Z&ske=2026-09-07T04%3A23%3A41Z&sks=b&skv=2026-02-06&sig=Q31ub8POeAlGzVYvyprGeFdKd6DMlm05IR3iKjnZGiE%3D' -o /tmp/sipsik-transfer/08-2.png
+          printf '%s  %s\n' '7fc8f56733394b9bf9953249aa93610a04f6e585b35edd4ca7a795f87b44c61e' /tmp/sipsik-transfer/08-0.png '67b813a9305a6d29955580b897304d2d7cbf3bed0571ef626aaf2f745e6ba857' /tmp/sipsik-transfer/08-1.png 'ed2283cd0bd8fd1e77d0903e425fc566a9d314275c405a59733ae986762f3b9c' /tmp/sipsik-transfer/08-2.png | sha256sum -c -
+          python3 /tmp/decode_sipsik_png.py src/assets/original-08.jpg 50003562 6a2e577dec4729c666fbebefd723fec70027a8a63a523ea84acfe269350a1575 /tmp/sipsik-transfer/08-0.png:16777216 /tmp/sipsik-transfer/08-1.png:16777216 /tmp/sipsik-transfer/08-2.png:16449130
+          git add src/assets/original-08.jpg && git commit -m 'Add untouched Original spread 8 [skip ci]' && git push
+          rm -f /tmp/sipsik-transfer/08-*.png
+
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprjapaneast.blob.core.windows.net/files/00000000-0414-8209-972a-0ba8e453a471/raw?se=2026-09-06T10%3A03%3A03Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A24%3A35Z&ske=2026-09-07T04%3A24%3A35Z&sks=b&skv=2026-02-06&sig=px46qaEAq4DFYhjNqfGzSTC0vDdaOZBBPI4GaaekeS4%3D' -o /tmp/sipsik-transfer/09-0.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprjapaneast.blob.core.windows.net/files/00000000-c640-8209-aa39-3a7f65eac725/raw?se=2026-09-06T10%3A03%3A03Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A47%3A46Z&ske=2026-09-07T04%3A47%3A46Z&sks=b&skv=2026-02-06&sig=nXOt/koawuoFQa6ul8ykVd1zbvJ4BqYoeZDR6mVIdAA%3D' -o /tmp/sipsik-transfer/09-1.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-84c4-8211-ae3b-0f52497bab81/raw?se=2026-09-06T10%3A03%3A03Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T03%3A24%3A43Z&ske=2026-09-07T03%3A24%3A43Z&sks=b&skv=2026-02-06&sig=McHxXuBre09PLJPk45P9AYCfPXwfojZGkOrkHxEdRTs%3D' -o /tmp/sipsik-transfer/09-2.png
+          printf '%s  %s\n' 'a784235d24e485c54939cf4ca9d5156e0966592d6709f81ebf5d29a6f149356e' /tmp/sipsik-transfer/09-0.png '664b2fc6c54bfec453bee9ad3c1c10b2da07826951f1e8c7bdf82b1d74b7b31c' /tmp/sipsik-transfer/09-1.png 'adf70514558587026a349dbdc318e94601a8ea12d09192ec8ef07149041363d9' /tmp/sipsik-transfer/09-2.png | sha256sum -c -
+          python3 /tmp/decode_sipsik_png.py src/assets/original-09.jpg 45575013 3cf42b15e617e77258f46d8b15561f2eca1604efd789ad64767625f4d815658d /tmp/sipsik-transfer/09-0.png:16777216 /tmp/sipsik-transfer/09-1.png:16777216 /tmp/sipsik-transfer/09-2.png:12020581
+          git add src/assets/original-09.jpg && git commit -m 'Add untouched Original spread 9 [skip ci]' && git push
+          rm -f /tmp/sipsik-transfer/09-*.png
+
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprseasia.blob.core.windows.net/files/00000000-76b8-8207-826b-819e8cc5709b/raw?se=2026-09-06T10%3A03%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T06%3A02%3A33Z&ske=2026-09-07T06%3A02%3A33Z&sks=b&skv=2026-02-06&sig=JYPp3BJCW6vH0AWFzRfEL7cx/cs6%2BOPmFeE6lmSe5AY%3D' -o /tmp/sipsik-transfer/10-0.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprseasia.blob.core.windows.net/files/00000000-45b4-8207-a917-8d2364959733/raw?se=2026-09-06T10%3A03%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T04%3A24%3A34Z&ske=2026-09-07T04%3A24%3A34Z&sks=b&skv=2026-02-06&sig=bPeCftYJ2Kf96WxkkGGpD6US5foPo8zQhFQm9YI3%2BpQ%3D' -o /tmp/sipsik-transfer/10-1.png
+          curl --fail --location --silent --show-error --retry 3 'https://oaisdmntprindiasocentral.blob.core.windows.net/files/00000000-7fd0-8211-93f2-1233bc2193ed/raw?se=2026-09-06T10%3A03%3A32Z&sp=r&sv=2026-02-06&sr=b&scid=d169970d-db8c-444b-9c37-84eff4c9dbb9&skoid=5e5afa93-cb2e-42ad-a58a-830b5b446f03&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-06T00%3A12%3A53Z&ske=2026-09-07T00%3A12%3A53Z&sks=b&skv=2026-02-06&sig=m/YSU4%2BOrnj6piOASXoKC0XYkKfIWxgRXdxMoOP0AZc%3D' -o /tmp/sipsik-transfer/10-2.png
+          printf '%s  %s\n' 'dc5142f72265336a2304e2e506b6c5627b28b0e4d91ab15a81c8559c676f2cef' /tmp/sipsik-transfer/10-0.png '0e9a7eee6cf330a607130dfc62b8193145aec4c55c3727703f0e21eb91ddff51' /tmp/sipsik-transfer/10-1.png '87f4a829a66753264b4a079c3d112f8eb92bb127fb8c7dfc244cb69326775a2a' /tmp/sipsik-transfer/10-2.png | sha256sum -c -
+          python3 /tmp/decode_sipsik_png.py src/assets/original-10.jpg 42788029 cd2bf940a9f4a0dc9a922cc279ab73aa562aec7d4ef5e5c3610e087bc316c992 /tmp/sipsik-transfer/10-0.png:16777216 /tmp/sipsik-transfer/10-1.png:16777216 /tmp/sipsik-transfer/10-2.png:9233597
+          git add src/assets/original-10.jpg && git commit -m 'Add untouched Original spread 10 [skip ci]' && git push
+          rm -f /tmp/sipsik-transfer/10-*.png
