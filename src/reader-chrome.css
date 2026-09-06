@@ -16,9 +16,23 @@
 .home-language{margin:15px 0 0;padding:14px 4px 0;justify-content:space-between;border-top:1px solid var(--line);font:700 16px/1 ui-sans-serif,system-ui,sans-serif;color:var(--ink);}
 .home-language select{min-width:126px;padding:11px 34px 11px 15px;border-radius:18px;background:rgba(255,255,255,.28);font:400 16px/1 ui-sans-serif,system-ui,sans-serif;color:var(--ink);}
 
-/* Reader: picture + scrolling text only. Persistent footer is removed from view. */
-.reader{position:relative;grid-template-rows:clamp(255px,42dvh,430px) minmax(0,1fr);}
+/* Reader: one continuous scroll. Each picture is sticky inside its own story
+   section, so the next picture pushes it away at the locked handoff. */
+.reader{position:relative;display:block;}
 .reader-footer{display:none!important;}
+.story-scroller{height:100dvh;overflow-y:auto;overscroll-behavior-y:contain;background:var(--surface);}
+.story{width:100%;max-width:none;margin:0;padding:0;}
+.story-segment{position:relative;width:100%;}
+.segment-art{position:sticky;top:0;z-index:2;height:clamp(255px,42dvh,430px);margin:0;display:flex;align-items:center;justify-content:center;padding:calc(8px + var(--safe-top)) 14px 8px;background:var(--surface);overflow:hidden;}
+.segment-art-surface{position:relative;width:min(100%,760px);height:100%;display:flex;align-items:center;justify-content:center;isolation:isolate;}
+.segment-art-surface::before{content:'';position:absolute;z-index:-1;inset:7% 5%;border-radius:34%;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--art-wash) 38%,transparent) 0 48%,transparent 78%);filter:blur(18px);}
+.segment-art-image{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center;user-select:none;-webkit-user-drag:none;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 7%,#000 93%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 7%,#000 93%,transparent 100%);mask-composite:intersect;}
+.segment-copy{position:relative;z-index:1;width:min(100%,700px);margin:0 auto;padding:20px 26px 46px;background:var(--surface);}
+.segment-copy .chapter-heading{margin-top:4px;}
+.art-stage{display:none!important;}
+.listen-visual{position:relative;isolation:isolate;overflow:hidden;}
+.listen-visual::before{content:'';position:absolute;z-index:-1;inset:7% 5%;border-radius:34%;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--art-wash,#c7bda8) 38%,transparent) 0 48%,transparent 78%);filter:blur(18px);}
+.listen-art{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 7%,#000 93%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 7%,#000 93%,transparent 100%);mask-composite:intersect;}
 
 /* Invisible corner discovery zones. On touch, first contact reveals the control;
    on pointer devices, hovering the corner reveals it. */
@@ -31,7 +45,7 @@
 .reader-more-button{font:700 15px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:2px;padding:0 0 8px 2px;}
 
 .reader-quick-menu,.reader-quick-submenu{position:absolute;z-index:28;right:14px;top:calc(60px + var(--safe-top));border:1px solid var(--line);background:rgba(251,250,245,.96);box-shadow:0 12px 34px rgba(43,36,32,.10);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);}
-.reader-quick-menu{display:grid;grid-template-columns:repeat(3,48px);gap:4px;padding:6px;border-radius:22px;}
+.reader-quick-menu{display:grid;grid-template-columns:repeat(4,48px);gap:4px;padding:6px;border-radius:22px;}
 .quick-icon-button{width:48px;height:48px;border:0;border-radius:16px;background:transparent;display:grid;place-items:center;font:600 19px/1 Georgia,"Times New Roman",serif;color:var(--ink);}
 .quick-icon-button:active,.quick-icon-button[aria-pressed="true"]{background:rgba(70,58,49,.07);}
 .quick-icon-button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
@@ -41,6 +55,8 @@
 .reader-text-submenu button{height:42px;border:0;border-radius:13px;background:transparent;font:600 16px/1 ui-sans-serif,system-ui,sans-serif;}
 .reader-text-submenu output{text-align:center;font:600 11px/1 ui-sans-serif,system-ui,sans-serif;color:var(--muted);}
 .reader-background-submenu{display:flex;align-items:center;gap:7px;padding:9px;}
+.reader-language-submenu{display:block;min-width:154px;}
+.reader-language-submenu select{width:100%;min-height:42px;border:0;border-radius:13px;background:transparent;padding:0 34px 0 12px;font:650 13px/1 ui-sans-serif,system-ui,sans-serif;}
 .quick-theme-dot{width:34px;height:34px;border-radius:50%;border:1px solid rgba(47,42,39,.16);position:relative;}
 .quick-theme-dot[data-quick-theme="white"]{background:#fff;}
 .quick-theme-dot[data-quick-theme="ivory"]{background:#fbfaf5;}
@@ -54,12 +70,15 @@
   .door-title{font-size:clamp(21px,6vw,27px);}
   .door-copy{font-size:13px;}
   .home-language{margin-top:10px;padding-top:10px;}
+  .segment-art{height:clamp(220px,38dvh,300px);}
 }
 
 @media(min-width:760px){
   .home-shell{width:min(62vw,590px);}
   .home-cover-wrap{height:min(54dvh,530px);}
   .reader-corner-zone{width:92px;height:92px;}
+  .segment-art{height:clamp(300px,45dvh,470px);padding-left:36px;padding-right:36px;}
+  .segment-copy{padding:28px 42px 54px;}
 }
 
 @media(prefers-reduced-motion:reduce){
