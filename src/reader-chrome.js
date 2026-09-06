@@ -1,3 +1,6 @@
+const chromeStyles=document.createElement('link');
+chromeStyles.rel='stylesheet';chromeStyles.href='./reader-chrome.css';document.head.appendChild(chromeStyles);
+
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
@@ -12,7 +15,6 @@ const backgroundSubmenu=$('#readerBackgroundSubmenu');
 const textValue=$('#quickTextValue');
 const scroller=$('#storyScroller');
 const SCALES=[.88,1,1.14,1.28];
-const THEMES=['white','ivory','paper','gray'];
 let hideTimer=null;
 
 function api(){return window.__SIPSIK_TEST__||null}
