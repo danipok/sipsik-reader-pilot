@@ -17,6 +17,10 @@ const scroller=$('#storyScroller');
 const SCALES=[.88,1,1.14,1.28];
 let hideTimer=null;
 
+/* The visual controls are intentionally hidden, but they remain real accessible controls. */
+backZone?.removeAttribute('aria-hidden');
+moreZone?.removeAttribute('aria-hidden');
+
 function api(){return window.__SIPSIK_TEST__||null}
 function state(){return api()?.getState?.()||{fontScale:1,theme:'ivory'}}
 function clearHide(){if(hideTimer){clearTimeout(hideTimer);hideTimer=null}}
